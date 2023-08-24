@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - '3001:4000'
+    volumes:
+      - .:/home/node/app
+
+  db:
+    image: 'bitnami/mongodb:latest'
+    environment:
+      MONGODB_ADVERTISED_HOSTNAME: db
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_ROOT_PASSWORD: root
+      MONGODB_REPLICA_SET_KEY: replicasetkey123
+    ports:
+      - '27017:27017'
+
+    volumes:
+      - 'mongodb_data:/bitnami'
+
+  mongodb-secondary:
+    image: 'bitnami/mongodb:latest'
+    depends_on:
+      - db
+    environment:
+      MONGODB_ADVERTISED_HOSTNAME: mongodb-secondary
+      MONGODB_REPLICA_SET_MODE: secondary
+      MONGODB_INITIAL_PRIMARY_HOST: db
+      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: 27017
+      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: root
+      MONGODB_REPLICA_SET_KEY: replicasetkey123
+    ports:
+      - '27027:27017'
+
+volumes:
+  mongodb_data:
+    driver: local
